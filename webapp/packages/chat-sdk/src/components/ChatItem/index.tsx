@@ -1,24 +1,20 @@
 import {
   ChatContextType,
-  DateInfoType,
-  EntityInfoType,
-  FilterItemType,
   MsgDataType,
   ParseStateEnum,
   ParseTimeCostType,
-  RangeValue,
 } from '../../common/type';
 import React, { createContext, useEffect, useState } from 'react';
-import { chatExecute, chatParse, queryData, deleteQuery, switchEntity } from '../../service';
+import { chatExecute, chatParse, deleteQuery } from '../../service';
 import { PARSE_ERROR_TIP, PREFIX_CLS, SEARCH_EXCEPTION_TIP } from '../../common/constants';
-import { message, Spin } from 'antd';
+import { message } from 'antd';
 import IconFont from '../IconFont';
 import ParseTip from './ParseTip';
 import ExecuteItem from './ExecuteItem';
 import classNames from 'classnames';
 import Tools from '../Tools';
 import { AgentType } from '../../Chat/type';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { exportCsvFile } from '../../utils/utils';
 import { useMethodRegister } from '../../hooks';
 
@@ -35,8 +31,6 @@ type Props = {
   msgData?: MsgDataType;
   triggerResize?: boolean;
   isDeveloper?: boolean;
-  integrateSystem?: string;
-  isSimpleMode?: boolean;
   currentAgent?: AgentType;
   isLastMessage?: boolean;
   onMsgDataLoaded?: (data: MsgDataType, valid: boolean, isRefresh?: boolean) => void;
@@ -62,8 +56,6 @@ const ChatItem: React.FC<Props> = ({
   msgData,
   triggerResize,
   isDeveloper,
-  integrateSystem,
-  isSimpleMode,
   currentAgent,
   isLastMessage,
   onMsgDataLoaded,
@@ -73,7 +65,6 @@ const ChatItem: React.FC<Props> = ({
   const [parseLoading, setParseLoading] = useState(false);
   const [parseTimeCost, setParseTimeCost] = useState<ParseTimeCostType>();
   const [parseInfo, setParseInfo] = useState<ChatContextType>();
-  const [parseInfoOptions, setParseInfoOptions] = useState<ChatContextType[]>([]);
   const [parseTip, setParseTip] = useState('');
   const [executeMode, setExecuteMode] = useState(false);
   const [preParseMode, setPreParseMode] = useState(false);
@@ -81,28 +72,16 @@ const ChatItem: React.FC<Props> = ({
   const [executeTip, setExecuteTip] = useState('');
   const [executeErrorMsg, setExecuteErrorMsg] = useState('');
   const [data, setData] = useState<MsgDataType>();
-  const [entitySwitchLoading, setEntitySwitchLoading] = useState(false);
-  const [dimensionFilters, setDimensionFilters] = useState<FilterItemType[]>([]);
-  const [dateInfo, setDateInfo] = useState<DateInfoType>({} as DateInfoType);
-  const [entityInfo, setEntityInfo] = useState<EntityInfoType>({} as EntityInfoType);
-  const [dataCache, setDataCache] = useState<Record<number, { tip: string; data?: MsgDataType }>>(
-    {}
-  );
 
   const resetState = () => {
     setParseLoading(false);
     setParseTimeCost(undefined);
     setParseInfo(undefined);
-    setParseInfoOptions([]);
     setPreParseMode(false);
     setParseTip('');
     setExecuteMode(false);
-    setDimensionFilters([]);
     setData(undefined);
     setExecuteErrorMsg('');
-    setDateInfo({} as DateInfoType);
-    setEntityInfo({} as EntityInfoType);
-    setDataCache({});
   };
 
   const prefixCls = `${PREFIX_CLS}-item`;
@@ -110,8 +89,7 @@ const ChatItem: React.FC<Props> = ({
   const updateData = (res: Result<MsgDataType>) => {
     let tip: string = '';
     let data: MsgDataType | undefined = undefined;
-    const { queryColumns, queryResults, queryState, queryMode, response, chatContext, errorMsg } =
-      res.data || {};
+    const { queryColumns, queryResults, queryState, queryMode, response, errorMsg } = res.data || {};
     setExecuteErrorMsg(errorMsg);
     if (res.code === 400 || res.code === 401 || res.code === 412) {
       tip = res.msg;
@@ -128,9 +106,6 @@ const ChatItem: React.FC<Props> = ({
       data = res.data;
       tip = '';
     }
-    if (chatContext) {
-      setDataCache({ ...dataCache, [chatContext!.id!]: { tip, data } });
-    }
     if (data) {
       setData(data);
       setExecuteTip('');
@@ -143,15 +118,10 @@ const ChatItem: React.FC<Props> = ({
   const onExecute = async (
     parseInfoValue: ChatContextType,
     parseInfos?: ChatContextType[],
-    isSwitchParseInfo?: boolean,
     isRefresh = false
   ) => {
     setExecuteMode(true);
-    if (isSwitchParseInfo) {
-      setEntitySwitchLoading(true);
-    } else {
-      setExecuteLoading(true);
-    }
+    setExecuteLoading(true);
     try {
       const res: any = await chatExecute(msg, conversationId!, parseInfoValue, agentId);
       const valid = updateData(res);
@@ -165,29 +135,9 @@ const ChatItem: React.FC<Props> = ({
         isRefresh
       );
     } catch (e) {
-      const tip = SEARCH_EXCEPTION_TIP;
       setExecuteTip(SEARCH_EXCEPTION_TIP);
-      setDataCache({ ...dataCache, [parseInfoValue!.id!]: { tip } });
     }
-    if (isSwitchParseInfo) {
-      setEntitySwitchLoading(false);
-    } else {
-      setExecuteLoading(false);
-    }
-  };
-
-  const updateDimensionFitlers = (filters: FilterItemType[]) => {
-    setDimensionFilters(
-      filters.sort((a, b) => {
-        if (a.name < b.name) {
-          return -1;
-        }
-        if (a.name > b.name) {
-          return 1;
-        }
-        return 0;
-      })
-    );
+    setExecuteLoading(false);
   };
 
   const sendMsg = async () => {
@@ -222,15 +172,11 @@ const ChatItem: React.FC<Props> = ({
     if (parseInfos.length > 1) {
       setPreParseMode(true);
     }
-    setParseInfoOptions(parseInfos || []);
     const parseInfoValue = parseInfos[0];
     if (!(currentAgent?.enableFeedback === 1 && parseInfos.length > 1)) {
       setParseInfo(parseInfoValue);
     }
     setParseTimeCost(parseTimeCost);
-    setEntityInfo(parseInfoValue.entityInfo || {});
-    updateDimensionFitlers(parseInfoValue?.dimensionFilters || []);
-    setDateInfo(parseInfoValue?.dateInfo);
     if (parseInfos.length === 1) {
       onExecute(parseInfoValue, parseInfos);
     }
@@ -243,11 +189,8 @@ const ChatItem: React.FC<Props> = ({
           ? parseInfos.map(item => ({ ...item, queryId: msgData.queryId }))
           : [{ ...msgData.chatContext, queryId: msgData.queryId }];
       const parseInfoValue = parseInfoOptionsValue[0];
-      setParseInfoOptions(parseInfoOptionsValue);
       setParseInfo(parseInfoValue);
       setParseTimeCost(parseTimeCostValue);
-      updateDimensionFitlers(parseInfoValue.dimensionFilters || []);
-      setDateInfo(parseInfoValue.dateInfo);
       setExecuteMode(true);
       updateData({ code: 200, data: msgData, msg: 'success' });
     } else if (msg) {
@@ -261,76 +204,6 @@ const ChatItem: React.FC<Props> = ({
     }
     initChatItem(msg, msgData);
   }, [msg, msgData]);
-
-  const onSwitchEntity = async (entityId: string) => {
-    setEntitySwitchLoading(true);
-    const res = await switchEntity(entityId, data?.chatContext?.modelId, conversationId || 0);
-    setEntitySwitchLoading(false);
-    setData(res.data);
-    const { chatContext, entityInfo } = res.data || {};
-    const chatContextValue = { ...(chatContext || {}), queryId: parseInfo?.queryId };
-    setParseInfo(chatContextValue);
-    setEntityInfo(entityInfo);
-    updateDimensionFitlers(chatContextValue?.dimensionFilters || []);
-    setDateInfo(chatContextValue?.dateInfo);
-    setDataCache({ ...dataCache, [chatContextValue.id!]: { tip: '', data: res.data } });
-  };
-
-  const onFiltersChange = (dimensionFilters: FilterItemType[]) => {
-    setDimensionFilters(dimensionFilters);
-  };
-
-  const onDateInfoChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
-    if (dates && dates[0] && dates[1]) {
-      const [start, end] = dates;
-      setDateInfo({
-        ...(dateInfo || {}),
-        startDate: dayjs(start).format('YYYY-MM-DD'),
-        endDate: dayjs(end).format('YYYY-MM-DD'),
-        dateMode: 'BETWEEN',
-        unit: 0,
-      });
-    }
-  };
-
-  const handlePresetClick = (range: RangeValue) => {
-    setDateInfo({
-      ...(dateInfo || {}),
-      startDate: dayjs(range[0]).format('YYYY-MM-DD'),
-      endDate: dayjs(range[1]).format('YYYY-MM-DD'),
-      dateMode: 'BETWEEN',
-      unit: 0,
-    });
-  };
-
-  const onRefresh = async (parseInfoValue?: ChatContextType) => {
-    setEntitySwitchLoading(true);
-    const { dimensions, metrics, id, queryId } = parseInfoValue || parseInfo || {};
-    const chatContextValue = {
-      dimensions,
-      metrics,
-      dateInfo,
-      dimensionFilters,
-      parseId: id,
-      queryId,
-    };
-    const res: any = await queryData(chatContextValue);
-    setEntitySwitchLoading(false);
-    if (res.code === 200) {
-      const resChatContext = res.data?.chatContext;
-      const contextValue = { ...(resChatContext || chatContextValue), queryId };
-      const dataValue = {
-        ...res.data,
-        chatContext: contextValue,
-        parseInfos: parseInfoOptions,
-        queryId,
-      };
-      onMsgDataLoaded?.(dataValue, true, true);
-      setData(dataValue);
-      setParseInfo(contextValue);
-      setDataCache({ ...dataCache, [id!]: { tip: '', data: dataValue } });
-    }
-  };
 
   const deleteQueryInfo = async (queryId: number) => {
     const { code }: any = await deleteQuery(queryId);
@@ -373,43 +246,28 @@ const ChatItem: React.FC<Props> = ({
               {!preParseMode && (
                 <ParseTip
                   parseLoading={parseLoading}
-                  parseInfoOptions={parseInfoOptions}
                   parseTip={parseTip}
                   currentParseInfo={parseInfo}
-                  agentId={agentId}
-                  dimensionFilters={dimensionFilters}
-                  dateInfo={dateInfo}
-                  entityInfo={entityInfo}
-                  integrateSystem={integrateSystem}
                   parseTimeCost={parseTimeCost?.parseTime}
                   isDeveloper={isDeveloper}
-                  onSwitchEntity={onSwitchEntity}
-                  onFiltersChange={onFiltersChange}
-                  onDateInfoChange={onDateInfoChange}
-                  onRefresh={() => {
-                    onRefresh();
-                  }}
-                  handlePresetClick={handlePresetClick}
                 />
               )}
             </>
 
             {executeMode && (
-              <Spin spinning={entitySwitchLoading}>
-                <div style={{ minHeight: 50 }}>
-                  <ExecuteItem
-                    queryId={parseInfo?.queryId}
-                    question={msg}
-                    queryMode={parseInfo?.queryMode}
-                    executeLoading={executeLoading}
-                    executeTip={executeTip}
-                    executeErrorMsg={executeErrorMsg}
-                    data={data}
-                    triggerResize={triggerResize}
-                    isDeveloper={isDeveloper}
-                  />
-                </div>
-              </Spin>
+              <div style={{ minHeight: 50 }}>
+                <ExecuteItem
+                  queryId={parseInfo?.queryId}
+                  question={msg}
+                  queryMode={parseInfo?.queryMode}
+                  executeLoading={executeLoading}
+                  executeTip={executeTip}
+                  executeErrorMsg={executeErrorMsg}
+                  data={data}
+                  triggerResize={triggerResize}
+                  isDeveloper={isDeveloper}
+                />
+              </div>
             )}
           </div>
           {(parseTip !== '' || (executeMode && !executeLoading)) &&

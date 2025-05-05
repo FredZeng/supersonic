@@ -1,8 +1,8 @@
 import Text from '../components/Text';
-import { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { isEqual } from 'lodash';
 import { AgentType, MessageItem, MessageTypeEnum } from '../type';
-import { isMobile, updateMessageContainerScroll } from '../../utils/utils';
+import { updateMessageContainerScroll } from '../../utils/utils';
 import styles from './style.module.less';
 import AgentTip from '../components/AgentTip';
 import classNames from 'classnames';
@@ -63,7 +63,7 @@ const MessageContainer: React.FC<Props> = ({
     onResize();
   }, [historyVisible, chatVisible]);
 
-  const messageContainerClass = classNames(styles.messageContainer, { [styles.mobile]: isMobile });
+  const messageContainerClass = classNames(styles.messageContainer);
   return (
     <div id={id} className={messageContainerClass}>
       <div className={styles.messageList}>
@@ -97,7 +97,6 @@ const MessageContainer: React.FC<Props> = ({
                   <ChatItem
                     questionId={questionId}
                     currentAgent={currentAgent}
-                    isSimpleMode={isSimpleMode}
                     msg={msgValue || msg || ''}
                     parseInfos={parseInfos}
                     parseTimeCostValue={parseTimeCost}
@@ -109,7 +108,6 @@ const MessageContainer: React.FC<Props> = ({
                     filter={filters}
                     triggerResize={triggerResize}
                     isDeveloper={isDeveloper}
-                    integrateSystem={integrateSystem}
                     onMsgDataLoaded={(data: MsgDataType, valid: boolean, isRefresh) => {
                       onMsgDataLoaded(data, msgId, msgValue || msg || '', valid, isRefresh);
                     }}
