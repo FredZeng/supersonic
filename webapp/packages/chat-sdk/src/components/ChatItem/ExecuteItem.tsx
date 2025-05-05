@@ -1,4 +1,4 @@
-import { Space, Spin, Switch, Tooltip, message } from 'antd';
+import { Space, Spin, Switch, message } from 'antd';
 import { CheckCircleFilled, InfoCircleOutlined } from '@ant-design/icons';
 import { PREFIX_CLS, MsgContentTypeEnum } from '../../common/constants';
 import { MsgDataType } from '../../common/type';
@@ -166,7 +166,6 @@ const ExecuteItem: React.FC<Props> = ({
             <WebPage id={queryId!} data={data} />
           ) : (
             <ChatMsg
-              isSimpleMode={isSimpleMode}
               forceShowTable={showMsgContentTable}
               queryId={queryId}
               question={question}

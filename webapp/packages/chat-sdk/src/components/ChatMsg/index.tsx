@@ -3,14 +3,12 @@ import MetricCard from './MetricCard';
 import MetricTrend from './MetricTrend';
 import MarkDown from './MarkDown';
 import Table from './Table';
-import { ColumnType, DrillDownDimensionType, FieldType, MsgDataType } from '../../common/type';
+import { ColumnType, FieldType, MsgDataType } from '../../common/type';
 import React, { useEffect, useState } from 'react';
 import { queryData } from '../../service';
 import classNames from 'classnames';
 import { PREFIX_CLS, MsgContentTypeEnum } from '../../common/constants';
 import Text from './Text';
-import DrillDownDimensions from '../DrillDownDimensions';
-import MetricOptions from '../MetricOptions';
 import Pie from './Pie';
 
 type Props = {
@@ -20,7 +18,6 @@ type Props = {
   chartIndex: number;
   triggerResize?: boolean;
   forceShowTable?: boolean;
-  isSimpleMode?: boolean;
   onMsgContentTypeChange: (msgContentType: MsgContentTypeEnum) => void;
 };
 
@@ -28,58 +25,46 @@ const ChatMsg: React.FC<Props> = ({
   queryId,
   question,
   data,
-  chartIndex,
+  chartIndex = 0,
   triggerResize,
   forceShowTable = false,
-  isSimpleMode,
   onMsgContentTypeChange,
 }) => {
   const { queryColumns, queryResults, chatContext, queryMode } = data || {};
-  const { dimensionFilters, elementMatches } = chatContext || {};
 
   const [columns, setColumns] = useState<ColumnType[]>([]);
   const [referenceColumn, setReferenceColumn] = useState<ColumnType>();
   const [dataSource, setDataSource] = useState<any[]>(queryResults);
-  const [drillDownDimension, setDrillDownDimension] = useState<DrillDownDimensionType>();
-  const [secondDrillDownDimension, setSecondDrillDownDimension] =
-    useState<DrillDownDimensionType>();
   const [loading, setLoading] = useState(false);
   const [defaultMetricField, setDefaultMetricField] = useState<FieldType>();
   const [activeMetricField, setActiveMetricField] = useState<FieldType>();
-  const [dateModeValue, setDateModeValue] = useState<any>();
   const [currentDateOption, setCurrentDateOption] = useState<number>();
 
   const prefixCls = `${PREFIX_CLS}-chat-msg`;
 
-  const updateColummns = (queryColumnsValue: ColumnType[]) => {
+  const updateColumns = (queryColumnsValue: ColumnType[]) => {
     const referenceColumn = queryColumnsValue.find(item => item.showType === 'more');
     setReferenceColumn(referenceColumn);
     setColumns(queryColumnsValue.filter(item => item.showType !== 'more'));
   };
 
   useEffect(() => {
-    updateColummns(queryColumns);
+    updateColumns(queryColumns);
     setDataSource(queryResults);
     setDefaultMetricField(chatContext?.metrics?.[0]);
     setActiveMetricField(chatContext?.metrics?.[0]);
-    setDateModeValue(chatContext?.dateInfo?.dateMode);
     setCurrentDateOption(chatContext?.dateInfo?.unit);
-    setDrillDownDimension(undefined);
-    setSecondDrillDownDimension(undefined);
   }, [data]);
 
   const metricFields = columns.filter(item => item.showType === 'NUMBER');
 
-  const getMsgContentType = () => {
+  const getMsgContentType = (): MsgContentTypeEnum | null => {
     const singleData = dataSource.length === 1;
     const dateField = columns.find(item => item.showType === 'DATE' || item.type === 'DATE');
     const categoryField = columns.filter(item => item.showType === 'CATEGORY');
     const metricFields = columns.filter(item => item.showType === 'NUMBER');
     if (!columns) {
-      return;
-    }
-    if (isSimpleMode) {
-      return MsgContentTypeEnum.MARKDOWN;
+      return null;
     }
     if (forceShowTable) {
       return MsgContentTypeEnum.TABLE;
@@ -165,7 +150,7 @@ const ChatMsg: React.FC<Props> = ({
     if (type) {
       onMsgContentTypeChange?.(type);
     }
-  }, [data, columns, isSimpleMode]);
+  }, [data, columns]);
 
   if (!queryColumns || !queryResults || !columns) {
     return null;
@@ -205,7 +190,6 @@ const ChatMsg: React.FC<Props> = ({
             chartIndex={chartIndex}
             triggerResize={triggerResize}
             activeMetricField={activeMetricField}
-            drillDownDimension={drillDownDimension}
             currentDateOption={currentDateOption}
             onSelectDateOption={selectDateOption}
           />
@@ -262,67 +246,16 @@ const ChatMsg: React.FC<Props> = ({
     });
     setLoading(false);
     if (res.code === 200) {
-      updateColummns(res.data?.queryColumns || []);
+      updateColumns(res.data?.queryColumns || []);
       setDataSource(res.data?.queryResults || []);
     }
   };
 
-  const onSelectDimension = async (dimension?: DrillDownDimensionType) => {
-    setLoading(true);
-    setDrillDownDimension(dimension);
-    onLoadData({
-      dateInfo: {
-        ...chatContext.dateInfo,
-        dateMode: dateModeValue,
-        unit: currentDateOption || chatContext.dateInfo?.unit,
-      },
-      dimensions: dimension
-        ? [...(chatContext.dimensions || []), dimension]
-        : chatContext.dimensions,
-      metrics: [activeMetricField || defaultMetricField],
-    });
-  };
-
-  const onSelectSecondDimension = (dimension?: DrillDownDimensionType) => {
-    setSecondDrillDownDimension(dimension);
-    onLoadData({
-      dateInfo: {
-        ...chatContext.dateInfo,
-        dateMode: dateModeValue,
-        unit: currentDateOption || chatContext.dateInfo.unit,
-      },
-      dimensions: [
-        ...(chatContext.dimensions || []),
-        ...(drillDownDimension ? [drillDownDimension] : []),
-        ...(dimension ? [dimension] : []),
-      ],
-      metrics: [activeMetricField || defaultMetricField],
-    });
-  };
-
-  const onSwitchMetric = (metricField?: FieldType) => {
-    setActiveMetricField(metricField);
-    onLoadData({
-      dateInfo: {
-        ...chatContext.dateInfo,
-        dateMode: dateModeValue,
-        unit: currentDateOption || chatContext.dateInfo.unit,
-      },
-      dimensions: drillDownDimension
-        ? [...(chatContext.dimensions || []), drillDownDimension]
-        : chatContext.dimensions,
-      metrics: [metricField || defaultMetricField],
-    });
-  };
-
   const selectDateOption = (dateOption: number) => {
     setCurrentDateOption(dateOption);
-    setDateModeValue('RECENT');
     onLoadData({
       metrics: [activeMetricField || defaultMetricField],
-      dimensions: drillDownDimension
-        ? [...(chatContext.dimensions || []), drillDownDimension]
-        : chatContext.dimensions,
+      dimensions: chatContext.dimensions,
       dateInfo: {
         ...chatContext?.dateInfo,
         dateMode: 'RECENT',
@@ -337,29 +270,6 @@ const ChatMsg: React.FC<Props> = ({
     ),
   });
 
-  const entityId = dimensionFilters?.length > 0 ? dimensionFilters[0].value : undefined;
-  const entityName = elementMatches?.find((item: any) => item.element?.type === 'ID')?.element
-    ?.name;
-
-  const isEntityMode =
-    (queryMode === 'TAG_LIST_FILTER' || queryMode === 'METRIC_TAG') &&
-    typeof entityId === 'string' &&
-    entityName !== undefined;
-
-  const existDrillDownDimension =
-    queryMode.includes('METRIC') &&
-    getMsgContentType() !== MsgContentTypeEnum.TEXT &&
-    !isEntityMode;
-
-  const recommendMetrics = chatContext?.metrics?.filter(metric =>
-    queryColumns.every(queryColumn => queryColumn.bizName !== metric.bizName)
-  );
-
-  const isMultipleMetric =
-    (queryMode.includes('METRIC') || queryMode === 'LLM_S2SQL') &&
-    recommendMetrics?.length > 0 &&
-    queryColumns?.filter(column => column.showType === 'NUMBER').length === 1;
-
   const type = getMsgContentType();
   const style = type ? getMsgStyle(type) : undefined;
 
@@ -370,35 +280,6 @@ const ChatMsg: React.FC<Props> = ({
       ) : (
         <div>
           {getMsgContent()}
-          {(isMultipleMetric || existDrillDownDimension) && !isSimpleMode && (
-            <div
-              className={`${prefixCls}-bottom-tools ${
-                getMsgContentType() === MsgContentTypeEnum.METRIC_CARD
-                  ? `${prefixCls}-metric-card-tools`
-                  : ''
-              }`}
-            >
-              {isMultipleMetric && (
-                <MetricOptions
-                  metrics={chatContext.metrics}
-                  defaultMetric={defaultMetricField}
-                  currentMetric={activeMetricField}
-                  onSelectMetric={onSwitchMetric}
-                />
-              )}
-              {existDrillDownDimension && (
-                <DrillDownDimensions
-                  drillDownDimensions={data?.recommendedDimensions || []}
-                  drillDownDimension={drillDownDimension}
-                  secondDrillDownDimension={secondDrillDownDimension}
-                  originDimensions={chatContext.dimensions}
-                  dimensionFilters={chatContext.dimensionFilters}
-                  onSelectDimension={onSelectDimension}
-                  onSelectSecondDimension={onSelectSecondDimension}
-                />
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>

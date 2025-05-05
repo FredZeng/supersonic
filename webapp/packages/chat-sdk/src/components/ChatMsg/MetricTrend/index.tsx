@@ -1,5 +1,5 @@
 import { CLS_PREFIX } from '../../../common/constants';
-import { DrillDownDimensionType, FieldType, MsgDataType } from '../../../common/type';
+import { FieldType, MsgDataType } from '../../../common/type';
 import MetricTrendChart from './MetricTrendChart';
 import { Spin, Select } from 'antd';
 import Table from '../Table';
@@ -26,7 +26,6 @@ type Props = {
   triggerResize?: boolean;
   loading: boolean;
   activeMetricField?: FieldType;
-  drillDownDimension?: DrillDownDimensionType;
   currentDateOption?: number;
   onApplyAuth?: (model: string) => void;
   onSelectDateOption: (value: number) => void;
@@ -39,7 +38,6 @@ const MetricTrend: React.FC<Props> = ({
   triggerResize,
   loading,
   activeMetricField,
-  drillDownDimension,
   currentDateOption,
   onApplyAuth,
   onSelectDateOption,
@@ -73,7 +71,7 @@ const MetricTrend: React.FC<Props> = ({
         </div>
         <Spin spinning={loading}>
           <div className={`${prefixCls}-content`}>
-            {aggregateInfo?.metricInfos?.length > 0 && drillDownDimension === undefined && (
+            {aggregateInfo?.metricInfos?.length > 0 && (
                 <MetricInfo aggregateInfo={aggregateInfo} currentMetricField={currentMetricField} />
               )}
             <div className={`${prefixCls}-select-options`}>
