@@ -8,7 +8,7 @@ import {
 } from '../../../utils/utils';
 import type { ECharts } from 'echarts';
 import * as echarts from 'echarts';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import moment from 'moment';
 import { ColumnType } from '../../../common/type';
 import NoPermissionChart from '../NoPermissionChart';

@@ -3,7 +3,7 @@ import { formatByDecimalPlaces, formatMetric, formatNumberWithCN } from '../../.
 import { AggregateInfoType, ColumnType } from '../../../common/type';
 import PeriodCompareItem from '../MetricCard/PeriodCompareItem';
 import { SwapOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 type Props = {
   aggregateInfo: AggregateInfoType;

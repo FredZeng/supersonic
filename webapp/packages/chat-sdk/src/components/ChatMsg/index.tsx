@@ -4,14 +4,13 @@ import MetricTrend from './MetricTrend';
 import MarkDown from './MarkDown';
 import Table from './Table';
 import { ColumnType, DrillDownDimensionType, FieldType, MsgDataType } from '../../common/type';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { queryData } from '../../service';
 import classNames from 'classnames';
 import { PREFIX_CLS, MsgContentTypeEnum } from '../../common/constants';
 import Text from './Text';
 import DrillDownDimensions from '../DrillDownDimensions';
 import MetricOptions from '../MetricOptions';
-import { isMobile } from '../../utils/utils';
 import Pie from './Pie';
 
 type Props = {
@@ -124,7 +123,7 @@ const ChatMsg: React.FC<Props> = ({
     const isMetricPie =
       metricFields.length > 0 &&
       metricFields?.length === 1 &&
-      (isMobile ? dataSource?.length <= 5 : dataSource?.length <= 10) &&
+      (dataSource?.length <= 10) &&
       dataSource.every(item => item[metricFields[0].bizName] > 0);
 
     if (isMetricPie) {
@@ -134,7 +133,7 @@ const ChatMsg: React.FC<Props> = ({
     const isMetricBar =
       categoryField?.length > 0 &&
       metricFields?.length === 1 &&
-      (isMobile ? dataSource?.length <= 5 : dataSource?.length <= 50);
+      (dataSource?.length <= 50);
 
     if (isMetricBar) {
       return MsgContentTypeEnum.METRIC_BAR;
@@ -143,9 +142,6 @@ const ChatMsg: React.FC<Props> = ({
   };
 
   const getMsgStyle = (type: MsgContentTypeEnum) => {
-    if (isMobile) {
-      return { maxWidth: 'calc(100vw - 20px)' };
-    }
     if (!queryResults?.length || !queryColumns.length) {
       return;
     }
@@ -380,7 +376,7 @@ const ChatMsg: React.FC<Props> = ({
                 getMsgContentType() === MsgContentTypeEnum.METRIC_CARD
                   ? `${prefixCls}-metric-card-tools`
                   : ''
-              } ${isMobile ? 'mobile' : ''}`}
+              }`}
             >
               {isMultipleMetric && (
                 <MetricOptions

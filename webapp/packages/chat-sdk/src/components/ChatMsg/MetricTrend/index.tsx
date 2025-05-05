@@ -1,13 +1,12 @@
 import { CLS_PREFIX } from '../../../common/constants';
 import { DrillDownDimensionType, FieldType, MsgDataType } from '../../../common/type';
-import { isMobile } from '../../../utils/utils';
 import MetricTrendChart from './MetricTrendChart';
 import { Spin, Select } from 'antd';
 import Table from '../Table';
 import MetricInfo from './MetricInfo';
 import DateOptions from '../DateOptions';
 import MultiMetricsTrendChart from './MultiMetricsTrendChart';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 const metricChartSelectOptions = [
   {
@@ -74,9 +73,7 @@ const MetricTrend: React.FC<Props> = ({
         </div>
         <Spin spinning={loading}>
           <div className={`${prefixCls}-content`}>
-            {!isMobile &&
-              aggregateInfo?.metricInfos?.length > 0 &&
-              drillDownDimension === undefined && (
+            {aggregateInfo?.metricInfos?.length > 0 && drillDownDimension === undefined && (
                 <MetricInfo aggregateInfo={aggregateInfo} currentMetricField={currentMetricField} />
               )}
             <div className={`${prefixCls}-select-options`}>

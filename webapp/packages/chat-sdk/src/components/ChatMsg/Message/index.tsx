@@ -1,18 +1,16 @@
 import { EntityInfoType, ChatContextType } from '../../../common/type';
 import { PREFIX_CLS } from '../../../common/constants';
+import React from 'react';
 
 type Props = {
   position: 'left' | 'right';
   width?: number | string;
   maxWidth?: number | string;
   height?: number | string;
-  title?: string;
-  followQuestions?: string[];
   bubbleClassName?: string;
   chatContext?: ChatContextType;
   entityInfo?: EntityInfoType;
   children?: React.ReactNode;
-  isMobileMode?: boolean;
   queryMode?: string;
 };
 

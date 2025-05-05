@@ -6,7 +6,7 @@ import PeriodCompareItem from './PeriodCompareItem';
 import { Spin } from 'antd';
 import classNames from 'classnames';
 import { SwapOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 type Props = {
   data: MsgDataType;

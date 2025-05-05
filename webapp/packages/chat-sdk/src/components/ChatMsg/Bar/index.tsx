@@ -1,5 +1,4 @@
 import { CHART_BLUE_COLOR, CHART_SECONDARY_COLOR, PREFIX_CLS } from '../../../common/constants';
-import { MsgDataType } from '../../../common/type';
 import {
   formatByDecimalPlaces,
   getChartLightenColor,
@@ -7,16 +6,13 @@ import {
 } from '../../../utils/utils';
 import type { ECharts } from 'echarts';
 import * as echarts from 'echarts';
-import {
-  forwardRef,
-  ForwardRefRenderFunction,
+import React, {
   useContext,
   useEffect,
-  useImperativeHandle,
   useRef,
 } from 'react';
 import NoPermissionChart from '../NoPermissionChart';
-import { ColumnType } from '../../../common/type';
+import { ColumnType, MsgDataType } from '../../../common/type';
 import { Spin } from 'antd';
 import { ChartItemContext } from '../../ChatItem';
 import { useExportByEcharts } from '../../../hooks';
@@ -46,7 +42,6 @@ const BarChart: React.FC<Props> = ({
   const categoryColumnName =
     queryColumns?.find(column => column.showType === 'CATEGORY')?.bizName || '';
   const metricColumn = queryColumns?.find(column => column.showType === 'NUMBER');
-  const metricColumnName = metricColumn?.bizName || '';
 
   const renderChart = () => {
     let instanceObj: any;
@@ -175,6 +170,15 @@ const BarChart: React.FC<Props> = ({
     }
   }, [triggerResize]);
 
+  const { downloadChartAsImage } = useExportByEcharts({
+    instanceRef,
+    question,
+  });
+
+  const { register } = useContext(ChartItemContext);
+
+  register('downloadChartAsImage', downloadChartAsImage);
+
   if (metricColumn && !metricColumn?.authorized) {
     return (
       <NoPermissionChart
@@ -186,15 +190,6 @@ const BarChart: React.FC<Props> = ({
   }
 
   const prefixCls = `${PREFIX_CLS}-bar`;
-
-  const { downloadChartAsImage } = useExportByEcharts({
-    instanceRef,
-    question,
-  });
-
-  const { register } = useContext(ChartItemContext);
-
-  register('downloadChartAsImage', downloadChartAsImage);
 
   return (
     <div>

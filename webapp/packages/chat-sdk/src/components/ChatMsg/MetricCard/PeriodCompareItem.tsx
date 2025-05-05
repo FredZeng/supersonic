@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import { PREFIX_CLS } from '../../../common/constants';
 import IconFont from '../../IconFont';
+import React from 'react';
 
 type Props = {
   title: string;

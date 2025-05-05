@@ -1,10 +1,9 @@
 import { PREFIX_CLS, THEME_COLOR_LIST } from '../../../common/constants';
-import { MsgDataType } from '../../../common/type';
 import { formatByDecimalPlaces, getFormattedValue } from '../../../utils/utils';
 import type { ECharts } from 'echarts';
 import * as echarts from 'echarts';
-import { useEffect, useRef } from 'react';
-import { ColumnType } from '../../../common/type';
+import React, { useEffect, useRef } from 'react';
+import { ColumnType, MsgDataType } from '../../../common/type';
 
 type Props = {
   data: MsgDataType;

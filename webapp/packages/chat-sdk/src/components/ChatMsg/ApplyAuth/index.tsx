@@ -1,3 +1,4 @@
+import React from 'react';
 import { PREFIX_CLS } from '../../../common/constants';
 
 type Props = {

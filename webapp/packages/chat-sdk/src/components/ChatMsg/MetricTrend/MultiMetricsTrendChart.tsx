@@ -2,7 +2,7 @@ import { CHART_SECONDARY_COLOR, CLS_PREFIX, THEME_COLOR_LIST } from '../../../co
 import { getFormattedValue } from '../../../utils/utils';
 import type { ECharts } from 'echarts';
 import * as echarts from 'echarts';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import moment from 'moment';
 import { ColumnType } from '../../../common/type';
 import { isArray } from 'lodash';

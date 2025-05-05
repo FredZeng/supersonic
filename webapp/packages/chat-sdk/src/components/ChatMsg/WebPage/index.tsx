@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { MsgDataType } from '../../../common/type';
-import { getToken, isMobile, isProd } from '../../../utils/utils';
+import { isProd } from '../../../utils/utils';
 import { webPageHost } from '../../../common/env';
 
 type Props = {
@@ -86,7 +86,7 @@ const WebPage: React.FC<Props> = ({ id, data }) => {
       );
       urlValue = urlValue.replace(
         '?',
-        `?token=${getToken()}&miniProgram=true&reportName=${name}&filterData=${filterData}&`
+        `?miniProgram=true&reportName=${name}&filterData=${filterData}&`
       );
       urlValue = `${webPageHost}${urlValue}`;
     } else {
@@ -112,7 +112,7 @@ const WebPage: React.FC<Props> = ({ id, data }) => {
       name={`reportIframe_${id}`}
       src={pluginUrl}
       style={{
-        width: isMobile ? 'calc(100vw - 20px)' : 'calc(100vw - 410px)',
+        width: 'calc(100vw - 410px)',
         height,
         border: 'none',
       }}

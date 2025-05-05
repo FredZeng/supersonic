@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import { CLS_PREFIX } from '../../../common/constants';
 import ApplyAuth from '../ApplyAuth';
+import React from 'react';
 
 type Props = {
   model: string;

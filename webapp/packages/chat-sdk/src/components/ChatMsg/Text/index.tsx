@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UpOutlined, DownOutlined } from '@ant-design/icons';
 import { CLS_PREFIX } from '../../../common/constants';
 import { ColumnType } from '../../../common/type';

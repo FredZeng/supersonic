@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import Markdown from 'react-markdown';
 import 'github-markdown-css/github-markdown.css';
 import 'highlight.js/styles/github.css';
+import React from 'react';
 
 type Props = {
   markdown: string;

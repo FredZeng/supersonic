@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { CLS_PREFIX, DATE_TYPES } from '../../../common/constants';
-import { isMobile } from '../../../utils/utils';
 import { ChatContextType } from '../../../common/type';
+import React from 'react';
 
 type Props = {
   chatContext: ChatContextType;
@@ -19,7 +19,6 @@ const DateOptions: React.FC<Props> = ({ chatContext, currentDateOption, onSelect
       {dateOptions.map((dateOption: { label: string; value: number }, index: number) => {
         const dateOptionClass = classNames(`${prefixCls}-item`, {
           [`${prefixCls}-date-active`]: dateOption.value === currentDateOption,
-          [`${prefixCls}-date-mobile`]: isMobile,
         });
         return (
           <>

@@ -3,8 +3,9 @@ import { Table as AntTable } from 'antd';
 import { MsgDataType } from '../../../common/type';
 import { CLS_PREFIX } from '../../../common/constants';
 import ApplyAuth from '../ApplyAuth';
-import { SizeType } from 'antd/es/config-provider/SizeContext';
+import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import moment from 'moment';
+import React from 'react';
 
 type Props = {
   data: MsgDataType;

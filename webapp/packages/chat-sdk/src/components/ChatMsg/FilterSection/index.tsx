@@ -1,5 +1,6 @@
 import { PREFIX_CLS } from '../../../common/constants';
 import { ChatContextType, EntityInfoType } from '../../../common/type';
+import React from 'react';
 
 type Props = {
   chatContext?: ChatContextType;
