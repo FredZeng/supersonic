@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ChatContextType } from '../../common/type';
 import { Popover } from 'antd';
 import { DownOutlined } from '@ant-design/icons';

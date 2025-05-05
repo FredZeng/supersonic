@@ -98,7 +98,6 @@ const MessageContainer: React.FC<Props> = ({
                     questionId={questionId}
                     currentAgent={currentAgent}
                     isSimpleMode={isSimpleMode}
-                    isDebugMode={isDebugMode}
                     msg={msgValue || msg || ''}
                     parseInfos={parseInfos}
                     parseTimeCostValue={parseTimeCost}

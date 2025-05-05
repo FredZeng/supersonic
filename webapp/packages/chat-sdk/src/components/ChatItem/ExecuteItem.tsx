@@ -1,4 +1,4 @@
-import { Space, Spin, Switch, message } from 'antd';
+import { Space, Spin, Switch } from 'antd';
 import { CheckCircleFilled, InfoCircleOutlined } from '@ant-design/icons';
 import { PREFIX_CLS, MsgContentTypeEnum } from '../../common/constants';
 import { MsgDataType } from '../../common/type';
@@ -15,16 +15,11 @@ type Props = {
   question: string;
   queryMode?: string;
   executeLoading: boolean;
-  entitySwitchLoading?: boolean;
-  chartIndex: number;
   executeTip?: string;
   executeErrorMsg?: string;
-  executeItemNode?: ReactNode;
-  renderCustomExecuteNode?: boolean;
   data?: MsgDataType;
   triggerResize?: boolean;
   isDeveloper?: boolean;
-  isSimpleMode?: boolean;
 };
 
 const ExecuteItem: React.FC<Props> = ({
@@ -32,16 +27,11 @@ const ExecuteItem: React.FC<Props> = ({
   question,
   queryMode,
   executeLoading,
-  entitySwitchLoading = false,
-  chartIndex,
   executeTip,
   executeErrorMsg,
-  executeItemNode,
-  renderCustomExecuteNode,
   data,
   triggerResize,
   isDeveloper,
-  isSimpleMode,
 }) => {
   const prefixCls = `${PREFIX_CLS}-item`;
   const [showMsgContentTable, setShowMsgContentTable] = useState<boolean>(false);
@@ -67,10 +57,6 @@ const ExecuteItem: React.FC<Props> = ({
   if (executeLoading) {
     return getNodeTip(`${titlePrefix}查询中`);
   }
-
-  const handleCopy = (_: string, result: any) => {
-    result ? message.success('复制SQL成功', 1) : message.error('复制SQL失败', 1);
-  };
 
   if (executeTip) {
     return getNodeTip(
@@ -109,45 +95,41 @@ const ExecuteItem: React.FC<Props> = ({
 
   return (
     <>
-      {!isSimpleMode && (
-        <div className={`${prefixCls}-title-bar`}>
-          <CheckCircleFilled className={`${prefixCls}-step-icon`} />
-          <div
-            className={`${prefixCls}-step-title ${prefixCls}-execute-title-bar`}
-            style={{ width: '100%' }}
-          >
-            <div>
-              {titlePrefix}查询
-              {!!data?.queryTimeCost && isDeveloper && (
-                <span className={`${prefixCls}-title-tip`}>(耗时: {data.queryTimeCost}ms)</span>
-              )}
-            </div>
-            <div>
-              {[
-                MsgContentTypeEnum.METRIC_TREND,
-                MsgContentTypeEnum.METRIC_BAR,
-                MsgContentTypeEnum.METRIC_PIE,
-              ].includes(msgContentType as MsgContentTypeEnum) && (
-                <Switch
-                  checkedChildren="表格"
-                  unCheckedChildren="表格"
-                  onChange={checked => {
-                    setShowMsgContentTable(checked);
-                  }}
-                />
-              )}
-            </div>
+      <div className={`${prefixCls}-title-bar`}>
+        <CheckCircleFilled className={`${prefixCls}-step-icon`} />
+        <div
+          className={`${prefixCls}-step-title ${prefixCls}-execute-title-bar`}
+          style={{ width: '100%' }}
+        >
+          <div>
+            {titlePrefix}查询
+            {!!data?.queryTimeCost && isDeveloper && (
+              <span className={`${prefixCls}-title-tip`}>(耗时: {data.queryTimeCost}ms)</span>
+            )}
+          </div>
+          <div>
+            {[
+              MsgContentTypeEnum.METRIC_TREND,
+              MsgContentTypeEnum.METRIC_BAR,
+              MsgContentTypeEnum.METRIC_PIE,
+            ].includes(msgContentType as MsgContentTypeEnum) && (
+              <Switch
+                checkedChildren="表格"
+                unCheckedChildren="表格"
+                onChange={checked => {
+                  setShowMsgContentTable(checked);
+                }}
+              />
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       <div
-        className={`${prefixCls}-content-container ${
-          isSimpleMode ? `${prefixCls}-content-container-simple` : ''
-        }`}
+        className={`${prefixCls}-content-container`}
         style={{ borderLeft: queryMode === 'PLAIN_TEXT' ? 'none' : undefined }}
       >
-        <Spin spinning={entitySwitchLoading}>
+        <Spin spinning={false}>
           {data.queryAuthorization?.message && (
             <div className={`${prefixCls}-auth-tip`}>提示：{data.queryAuthorization.message}</div>
           )}
@@ -158,9 +140,7 @@ const ExecuteItem: React.FC<Props> = ({
             </p>
           )}
 
-          {renderCustomExecuteNode && executeItemNode ? (
-            executeItemNode
-          ) : data?.queryMode === 'PLAIN_TEXT' || data?.queryMode === 'WEB_SERVICE' ? (
+          {data?.queryMode === 'PLAIN_TEXT' || data?.queryMode === 'WEB_SERVICE' ? (
             data?.textResult
           ) : data?.queryMode === 'WEB_PAGE' ? (
             <WebPage id={queryId!} data={data} />
@@ -170,7 +150,6 @@ const ExecuteItem: React.FC<Props> = ({
               queryId={queryId}
               question={question}
               data={data}
-              chartIndex={chartIndex}
               triggerResize={triggerResize}
               onMsgContentTypeChange={setMsgContentType}
             />

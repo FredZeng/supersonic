@@ -4,7 +4,6 @@ import { Button, DatePicker, Row, Col } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, ReloadOutlined } from '@ant-design/icons';
 import Loading from './Loading';
 import FilterItem from './FilterItem';
-import MarkDown from '../ChatMsg/MarkDown';
 import classNames from 'classnames';
 import { isMobile } from '../../utils/utils';
 import dayjs, { Dayjs } from 'dayjs';
@@ -30,8 +29,6 @@ type Props = {
   integrateSystem?: string;
   parseTimeCost?: number;
   isDeveloper?: boolean;
-  isSimpleMode?: boolean;
-  onSelectParseInfo: (parseInfo: ChatContextType) => void;
   onSwitchEntity: (entityId: string) => void;
   onFiltersChange: (filters: FilterItemType[]) => void;
   onDateInfoChange: (dateRange: any) => void;
@@ -43,7 +40,6 @@ type RangeValue = [Dayjs, Dayjs];
 type RangeKeys = '近7日' | '近14日' | '近30日' | '本周' | '本月' | '上月' | '本季度' | '本年';
 
 const ParseTip: React.FC<Props> = ({
-  isSimpleMode = false,
   parseLoading,
   parseInfoOptions,
   parseTip,
@@ -55,7 +51,6 @@ const ParseTip: React.FC<Props> = ({
   integrateSystem,
   parseTimeCost,
   isDeveloper,
-  onSelectParseInfo,
   onSwitchEntity,
   onFiltersChange,
   onDateInfoChange,
@@ -122,7 +117,7 @@ const ParseTip: React.FC<Props> = ({
     );
   }
 
-  if (isSimpleMode || parseInfoOptions.length === 0) {
+  if (parseInfoOptions.length === 0) {
     return null;
   }
 
@@ -231,7 +226,7 @@ const ParseTip: React.FC<Props> = ({
         )}
       </div>
     </div>,
-    // isSimpleMode ? <MarkDown markdown={textInfo} /> : queryMode === 'PLAIN_TEXT' ? null : tipNode
+    // false ? <MarkDown markdown={textInfo} /> : queryMode === 'PLAIN_TEXT' ? null : tipNode
     queryMode === 'PLAIN_TEXT' ? null : tipNode
   );
 };

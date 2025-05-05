@@ -15,7 +15,7 @@ type Props = {
   queryId?: number;
   question: string;
   data: MsgDataType;
-  chartIndex: number;
+  chartIndex?: number;
   triggerResize?: boolean;
   forceShowTable?: boolean;
   onMsgContentTypeChange: (msgContentType: MsgContentTypeEnum) => void;

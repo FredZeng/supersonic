@@ -1,4 +1,5 @@
 import { PREFIX_CLS } from '../../common/constants';
+import React from 'react';
 
 const Loading = () => {
   const prefixCls = `${PREFIX_CLS}-item`;

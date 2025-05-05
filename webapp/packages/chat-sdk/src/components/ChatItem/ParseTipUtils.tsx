@@ -1,5 +1,7 @@
 import { ChatContextTypeQueryTypeEnum } from '../../common/constants';
 import { AGG_TYPE_MAP, PREFIX_CLS } from '../../common/constants';
+import React from 'react';
+
 export const MAX_OPTION_VALUES_COUNT = 2;
 
 export const prefixCls = `${PREFIX_CLS}-item`;

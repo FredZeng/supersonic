@@ -7,21 +7,16 @@ import {
   ParseStateEnum,
   ParseTimeCostType,
   RangeValue,
-  SimilarQuestionType,
 } from '../../common/type';
-import { createContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { chatExecute, chatParse, queryData, deleteQuery, switchEntity } from '../../service';
 import { PARSE_ERROR_TIP, PREFIX_CLS, SEARCH_EXCEPTION_TIP } from '../../common/constants';
 import { message, Spin } from 'antd';
 import IconFont from '../IconFont';
-import ExpandParseTip from './ExpandParseTip';
 import ParseTip from './ParseTip';
 import ExecuteItem from './ExecuteItem';
-import { isMobile } from '../../utils/utils';
 import classNames from 'classnames';
 import Tools from '../Tools';
-import SqlItem from './SqlItem';
-import SimilarQuestionItem from './SimilarQuestionItem';
 import { AgentType } from '../../Chat/type';
 import dayjs, { Dayjs } from 'dayjs';
 import { exportCsvFile } from '../../utils/utils';
@@ -41,10 +36,7 @@ type Props = {
   triggerResize?: boolean;
   isDeveloper?: boolean;
   integrateSystem?: string;
-  executeItemNode?: React.ReactNode;
-  renderCustomExecuteNode?: boolean;
   isSimpleMode?: boolean;
-  isDebugMode?: boolean;
   currentAgent?: AgentType;
   isLastMessage?: boolean;
   onMsgDataLoaded?: (data: MsgDataType, valid: boolean, isRefresh?: boolean) => void;
@@ -65,17 +57,14 @@ const ChatItem: React.FC<Props> = ({
   agentId,
   score,
   filter,
-  triggerResize,
   parseInfos,
   parseTimeCostValue,
   msgData,
+  triggerResize,
   isDeveloper,
   integrateSystem,
-  executeItemNode,
-  renderCustomExecuteNode,
   isSimpleMode,
   currentAgent,
-  isDebugMode,
   isLastMessage,
   onMsgDataLoaded,
   onUpdateMessageScroll,
@@ -85,11 +74,9 @@ const ChatItem: React.FC<Props> = ({
   const [parseTimeCost, setParseTimeCost] = useState<ParseTimeCostType>();
   const [parseInfo, setParseInfo] = useState<ChatContextType>();
   const [parseInfoOptions, setParseInfoOptions] = useState<ChatContextType[]>([]);
-  const [preParseInfoOptions, setPreParseInfoOptions] = useState<ChatContextType[]>([]);
   const [parseTip, setParseTip] = useState('');
   const [executeMode, setExecuteMode] = useState(false);
   const [preParseMode, setPreParseMode] = useState(false);
-  const [showExpandParseTip, setShowExpandParseTip] = useState(false);
   const [executeLoading, setExecuteLoading] = useState(false);
   const [executeTip, setExecuteTip] = useState('');
   const [executeErrorMsg, setExecuteErrorMsg] = useState('');
@@ -101,7 +88,6 @@ const ChatItem: React.FC<Props> = ({
   const [dataCache, setDataCache] = useState<Record<number, { tip: string; data?: MsgDataType }>>(
     {}
   );
-  const [isParserError, setIsParseError] = useState<boolean>(false);
 
   const resetState = () => {
     setParseLoading(false);
@@ -109,8 +95,6 @@ const ChatItem: React.FC<Props> = ({
     setParseInfo(undefined);
     setParseInfoOptions([]);
     setPreParseMode(false);
-    setShowExpandParseTip(false);
-    setPreParseInfoOptions([]);
     setParseTip('');
     setExecuteMode(false);
     setDimensionFilters([]);
@@ -119,7 +103,6 @@ const ChatItem: React.FC<Props> = ({
     setDateInfo({} as DateInfoType);
     setEntityInfo({} as EntityInfoType);
     setDataCache({});
-    setIsParseError(false);
   };
 
   const prefixCls = `${PREFIX_CLS}-item`;
@@ -237,8 +220,6 @@ const ChatItem: React.FC<Props> = ({
       queryId,
     }));
     if (parseInfos.length > 1) {
-      setPreParseInfoOptions(parseInfos);
-      setShowExpandParseTip(true);
       setPreParseMode(true);
     }
     setParseInfoOptions(parseInfos || []);
@@ -359,62 +340,6 @@ const ChatItem: React.FC<Props> = ({
     }
   };
 
-  const onSelectParseInfo = async (parseInfoValue: ChatContextType) => {
-    setParseInfo(parseInfoValue);
-    updateDimensionFitlers(parseInfoValue.dimensionFilters || []);
-    setDateInfo(parseInfoValue.dateInfo);
-    if (parseInfoValue.entityInfo) {
-      setEntityInfo(parseInfoValue.entityInfo);
-    }
-    if (dataCache[parseInfoValue.id!]) {
-      const { tip, data } = dataCache[parseInfoValue.id!];
-      setExecuteTip(tip);
-      setData(data);
-      onMsgDataLoaded?.(
-        {
-          ...(data as any),
-          parseInfos,
-          queryId: parseInfoValue.queryId,
-        },
-        true,
-        true
-      );
-    } else {
-      onExecute(parseInfoValue, parseInfoOptions, true);
-    }
-  };
-
-  const onExpandSelectParseInfo = async (parseInfoValue: ChatContextType) => {
-    setParseInfo(parseInfoValue);
-    setPreParseMode(false);
-    const { id: parseId, queryId } = parseInfoValue;
-    setParseLoading(true);
-    const { code, data }: any = await chatParse({
-      queryText: msg,
-      chatId: conversationId,
-      modelId,
-      agentId,
-      filters: filter,
-      parseId,
-      queryId,
-      parseInfo: parseInfoValue,
-    });
-    setParseLoading(false);
-    if (code === 200) {
-      setParseTimeCost(data.parseTimeCost);
-      const parseInfo = data.selectedParses[0];
-      parseInfo.queryId = data.queryId;
-      setParseInfoOptions([parseInfo]);
-      setParseInfo(parseInfo);
-      updateDimensionFitlers(parseInfo.dimensionFilters || []);
-      setDateInfo(parseInfo.dateInfo);
-      if (parseInfo.entityInfo) {
-        setEntityInfo(parseInfo.entityInfo);
-      }
-      onExecute(parseInfo, [parseInfo], true, true);
-    }
-  };
-
   const onExportData = () => {
     const { queryColumns, queryResults } = data || {};
     if (!!queryResults) {
@@ -429,23 +354,15 @@ const ChatItem: React.FC<Props> = ({
     }
   };
 
-  const onSelectQuestion = (question: SimilarQuestionType) => {
-    onSendMsg?.(question.queryText);
-  };
-
-  const contentClass = classNames(`${prefixCls}-content`, {
-    [`${prefixCls}-content-mobile`]: isMobile,
-  });
-
-  const { llmReq, llmResp } = parseInfo?.properties?.CONTEXT || {};
+  const contentClass = classNames(`${prefixCls}-content`);
 
   const { register, call } = useMethodRegister(() => message.error('该条消息暂不支持该操作'));
 
   return (
     <ChartItemContext.Provider value={{ register, call }}>
       <div className={prefixCls}>
-        {!isMobile && <IconFont type="icon-zhinengsuanfa" className={`${prefixCls}-avatar`} />}
-        <div className={isMobile ? `${prefixCls}-mobile-msg-card` : ''}>
+        <IconFont type="icon-zhinengsuanfa" className={`${prefixCls}-avatar`}/>
+        <div>
           <div className={`${prefixCls}-time`}>
             {parseTimeCost?.parseStartTime
               ? dayjs(parseTimeCost.parseStartTime).format('M月D日 HH:mm')
@@ -453,28 +370,8 @@ const ChatItem: React.FC<Props> = ({
           </div>
           <div className={contentClass}>
             <>
-              {currentAgent?.enableFeedback === 1 && !questionId && showExpandParseTip && (
-                <div style={{ marginBottom: 10 }}>
-                  <ExpandParseTip
-                    isSimpleMode={isSimpleMode}
-                    parseInfoOptions={preParseInfoOptions}
-                    agentId={agentId}
-                    integrateSystem={integrateSystem}
-                    parseTimeCost={parseTimeCost?.parseTime}
-                    isDeveloper={isDeveloper}
-                    onSelectParseInfo={onExpandSelectParseInfo}
-                    onSwitchEntity={onSwitchEntity}
-                    onFiltersChange={onFiltersChange}
-                    onDateInfoChange={onDateInfoChange}
-                    onRefresh={onRefresh}
-                    handlePresetClick={handlePresetClick}
-                  />
-                </div>
-              )}
-
               {!preParseMode && (
                 <ParseTip
-                  isSimpleMode={isSimpleMode}
                   parseLoading={parseLoading}
                   parseInfoOptions={parseInfoOptions}
                   parseTip={parseTip}
@@ -486,7 +383,6 @@ const ChatItem: React.FC<Props> = ({
                   integrateSystem={integrateSystem}
                   parseTimeCost={parseTimeCost?.parseTime}
                   isDeveloper={isDeveloper}
-                  onSelectParseInfo={onSelectParseInfo}
                   onSwitchEntity={onSwitchEntity}
                   onFiltersChange={onFiltersChange}
                   onDateInfoChange={onDateInfoChange}
@@ -501,53 +397,20 @@ const ChatItem: React.FC<Props> = ({
             {executeMode && (
               <Spin spinning={entitySwitchLoading}>
                 <div style={{ minHeight: 50 }}>
-                  {!isMobile &&
-                    parseInfo?.sqlInfo &&
-                    isDeveloper &&
-                    isDebugMode &&
-                    !isSimpleMode && (
-                      <SqlItem
-                        agentId={agentId}
-                        queryId={parseInfo.queryId}
-                        question={msg}
-                        llmReq={llmReq}
-                        llmResp={llmResp}
-                        integrateSystem={integrateSystem}
-                        queryMode={parseInfo.queryMode}
-                        sqlInfo={parseInfo.sqlInfo}
-                        sqlTimeCost={parseTimeCost?.sqlTime}
-                        executeErrorMsg={executeErrorMsg}
-                      />
-                    )}
                   <ExecuteItem
-                    isSimpleMode={isSimpleMode}
                     queryId={parseInfo?.queryId}
                     question={msg}
                     queryMode={parseInfo?.queryMode}
                     executeLoading={executeLoading}
                     executeTip={executeTip}
                     executeErrorMsg={executeErrorMsg}
-                    chartIndex={0}
                     data={data}
                     triggerResize={triggerResize}
-                    executeItemNode={executeItemNode}
                     isDeveloper={isDeveloper}
-                    renderCustomExecuteNode={renderCustomExecuteNode}
                   />
                 </div>
               </Spin>
             )}
-            {executeMode &&
-              !executeLoading &&
-              !isSimpleMode &&
-              parseInfo?.queryMode !== 'PLAIN_TEXT' && (
-                <SimilarQuestionItem
-                  queryId={parseInfo?.queryId}
-                  defaultExpanded={parseTip !== '' || executeTip !== ''}
-                  similarQueries={data?.similarQueries}
-                  onSelectQuestion={onSelectQuestion}
-                />
-              )}
           </div>
           {(parseTip !== '' || (executeMode && !executeLoading)) &&
             parseInfo?.queryMode !== 'PLAIN_TEXT' && (
@@ -555,11 +418,9 @@ const ChatItem: React.FC<Props> = ({
                 isLastMessage={isLastMessage}
                 queryId={parseInfo?.queryId || 0}
                 scoreValue={score}
-                isParserError={isParserError}
                 onExportData={() => {
                   onExportData();
                 }}
-                isSimpleMode={isSimpleMode}
                 onReExecute={queryId => {
                   deleteQueryInfo(queryId);
                 }}
