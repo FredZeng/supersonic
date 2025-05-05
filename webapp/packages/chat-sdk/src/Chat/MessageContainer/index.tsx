@@ -17,9 +17,6 @@ type Props = {
   currentAgent?: AgentType;
   chatVisible?: boolean;
   isDeveloper?: boolean;
-  integrateSystem?: string;
-  isSimpleMode?: boolean;
-  isDebugMode?: boolean;
   onMsgDataLoaded: (
     data: MsgDataType,
     questionId: string | number,
@@ -38,9 +35,6 @@ const MessageContainer: React.FC<Props> = ({
   currentAgent,
   chatVisible,
   isDeveloper,
-  integrateSystem,
-  isSimpleMode,
-  isDebugMode,
   onMsgDataLoaded,
   onSendMsg,
 }) => {
@@ -131,8 +125,7 @@ function areEqual(prevProps: Props, nextProps: Props) {
     isEqual(prevProps.messageList, nextProps.messageList) &&
     prevProps.historyVisible === nextProps.historyVisible &&
     prevProps.currentAgent === nextProps.currentAgent &&
-    prevProps.chatVisible === nextProps.chatVisible &&
-    prevProps.isSimpleMode === nextProps.isSimpleMode
+    prevProps.chatVisible === nextProps.chatVisible
   ) {
     return true;
   }

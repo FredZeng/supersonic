@@ -36,7 +36,6 @@ type Props = {
   chatVisible?: boolean;
   noInput?: boolean;
   isDeveloper?: boolean;
-  integrateSystem?: string;
   isCopilot?: boolean;
   onCurrentAgentChange?: (agent?: AgentType) => void;
   onReportMsgEvent?: (msg: string, valid: boolean) => void;
@@ -50,7 +49,6 @@ const Chat: ForwardRefRenderFunction<any, Props> = (
     chatVisible,
     noInput,
     isDeveloper,
-    integrateSystem,
     isCopilot,
     onCurrentAgentChange,
     onReportMsgEvent,
@@ -425,15 +423,12 @@ const Chat: ForwardRefRenderFunction<any, Props> = (
                   )}
                   <MessageContainer
                     id="messageContainer"
-                    isSimpleMode={isSimpleMode}
-                    isDebugMode={isDebugMode}
                     messageList={messageList}
                     chatId={currentConversation?.chatId}
                     historyVisible={historyVisible}
                     currentAgent={currentAgent}
                     chatVisible={chatVisible}
                     isDeveloper={isDeveloper}
-                    integrateSystem={integrateSystem}
                     onMsgDataLoaded={onMsgDataLoaded}
                     onSendMsg={onSendMsg}
                   />
